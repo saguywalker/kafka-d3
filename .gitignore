@@ -13,7 +13,6 @@
 .*.swp
 .DS_Store
 .cache
-.cache
 .classpath
 .codefellow
 .ensime*
@@ -64,3 +63,4 @@ webpack-stats.json
 worker*.log
 *-shim.sbt
 test/pocs
+.bsp/

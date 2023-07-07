@@ -5,13 +5,13 @@ import java.util.Properties
 import cats.effect.Sync
 import cats.syntax.show._
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.clients.producer.{ KafkaProducer, ProducerConfig }
-
 import me.milan.config.KafkaConfig
 import me.milan.config.KafkaConfig.BootstrapServer._
 import me.milan.domain.Key
 import me.milan.serdes._
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerConfig
 
 object KProducer {
 

@@ -2,11 +2,13 @@ package me.milan.pubsub
 
 import cats.Applicative
 import cats.effect.ConcurrentEffect
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.clients.producer.{ Callback, KafkaProducer, ProducerRecord, RecordMetadata }
-
 import me.milan.domain.Record
 import me.milan.serdes.AvroSerde
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.producer.Callback
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 
 object Pub {
 

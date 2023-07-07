@@ -9,7 +9,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
-
 import me.milan.config.KafkaConfig
 
 object SchemaRegistryClient {

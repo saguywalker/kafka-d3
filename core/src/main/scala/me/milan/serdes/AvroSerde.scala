@@ -1,10 +1,11 @@
 package me.milan.serdes
 
-import com.sksamuel.avro4s.{ Decoder, Encoder, RecordFormat }
+import com.sksamuel.avro4s.Decoder
+import com.sksamuel.avro4s.Encoder
+import com.sksamuel.avro4s.RecordFormat
+import me.milan.domain.TombStone
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
-
-import me.milan.domain.TombStone
 
 trait AvroSerde[T] {
   def encode(record: T): GenericRecord
@@ -18,12 +19,15 @@ object AvroSerde {
 
     override def encode(record: T): GenericRecord = record match {
       case _: TombStone => null
-      case _            => format.to(record)
+      case _ => format.to(record)
     }
 
     override def decode(avroRecord: GenericRecord): T =
       if (avroRecord == null) null else format.from(avroRecord)
   }
 
-  def apply[T >: Null](implicit serde: AvroSerde[T]): AvroSerde[T] = serde
+  def apply[T >: Null](
+    implicit
+    serde: AvroSerde[T]
+  ): AvroSerde[T] = serde
 }

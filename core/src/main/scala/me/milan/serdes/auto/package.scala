@@ -1,6 +1,8 @@
 package me.milan.serdes
 
-import com.sksamuel.avro4s.{ Decoder, Encoder, SchemaFor }
+import com.sksamuel.avro4s.Decoder
+import com.sksamuel.avro4s.Encoder
+import com.sksamuel.avro4s.SchemaFor
 
 package object auto {
   implicit def autoSchema[T >: Null: SchemaFor: Encoder: Decoder]: AvroSerde[T] =

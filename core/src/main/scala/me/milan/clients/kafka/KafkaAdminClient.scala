@@ -7,30 +7,32 @@ import scala.collection.JavaConverters._
 import scala.compat.java8.DurationConverters._
 import scala.concurrent.duration._
 
-import cats.effect.{ ConcurrentEffect, Sync }
+import cats.effect.ConcurrentEffect
+import cats.effect.Sync
+import cats.instances.list._
 import cats.instances.long._
 import cats.syntax.applicativeError._
-import cats.syntax.monadError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import cats.syntax.monadError._
 import cats.syntax.show._
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.clients.admin.AdminClientConfig._
-import org.apache.kafka.clients.admin._
-import org.apache.kafka.clients.consumer.{ KafkaConsumer, OffsetAndMetadata }
-import org.apache.kafka.common.errors.UnknownTopicOrPartitionException
-import org.apache.kafka.common.{ ConsumerGroupState, TopicPartition }
-import org.http4s.Uri
 import cats.syntax.traverse._
-import cats.instances.list._
-
 import me.milan.config.KafkaConfig
 import me.milan.config.KafkaConfig.BootstrapServer._
 import me.milan.config.KafkaConfig.TopicConfig
+import me.milan.domain.Error
 import me.milan.domain.Topic
 import me.milan.pubsub.kafka.KConsumer
 import me.milan.pubsub.kafka.KConsumer.ConsumerGroupId
-import me.milan.domain.Error
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.admin.AdminClientConfig._
+import org.apache.kafka.clients.admin._
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.OffsetAndMetadata
+import org.apache.kafka.common.ConsumerGroupState
+import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException
+import org.http4s.Uri
 
 object KafkaAdminClient {
 
@@ -87,8 +89,12 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
         ConcurrentEffect[F]
           .async[Unit] { cb =>
             future
-              .whenComplete { (_, throwable) =>
-                cb(Option(throwable).toLeft(()))
+              .whenComplete {
+                (
+                  _,
+                  throwable
+                ) =>
+                  cb(Option(throwable).toLeft(()))
               }
             ()
           }
@@ -105,15 +111,19 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
 
   def getTopics(ignoreSystemTopics: Boolean = true): F[Set[Topic]] =
     ConcurrentEffect[F].async[Set[Topic]] { cb =>
-      adminClient.listTopics().names().whenComplete { (topics, throwable) =>
-        cb(
-          Option(throwable)
-            .toLeft(
-              topics.asScala.toSet
-                .filterNot(_.startsWith("_") && ignoreSystemTopics)
-                .map(Topic)
-            )
-        )
+      adminClient.listTopics().names().whenComplete {
+        (
+          topics,
+          throwable
+        ) =>
+          cb(
+            Option(throwable)
+              .toLeft(
+                topics.asScala.toSet
+                  .filterNot(_.startsWith("_") && ignoreSystemTopics)
+                  .map(Topic)
+              )
+          )
       }
       ()
     }
@@ -137,8 +147,12 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
         ConcurrentEffect[F]
           .async[Unit] { cb =>
             future
-              .whenComplete { (_, throwable) =>
-                cb(Option(throwable).toLeft(()))
+              .whenComplete {
+                (
+                  _,
+                  throwable
+                ) =>
+                  cb(Option(throwable).toLeft(()))
               }
             ()
           }
@@ -159,8 +173,12 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
         adminClient
           .describeConsumerGroups(Seq(consumerGroupId.value).asJavaCollection)
           .all
-          .whenComplete { (consumerGroups, throwable) =>
-            cb(Option(throwable).toLeft(consumerGroups.asScala.values.headOption))
+          .whenComplete {
+            (
+              consumerGroups,
+              throwable
+            ) =>
+              cb(Option(throwable).toLeft(consumerGroups.asScala.values.headOption))
           }
         ()
       }
@@ -179,9 +197,7 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
       _ <- isRunning(consumerGroup)
       partitionsToReset <- partitions(topic, consumer)
       partitionsWithTimestampReset = resetPartitionsToTimestamp(consumer, partitionsToReset, timestamp)
-    } yield {
-      consumer.commitSync(partitionsWithTimestampReset.asJava)
-    }
+    } yield consumer.commitSync(partitionsWithTimestampReset.asJava)
 
   private def getConsumerGroup(consumerGroupId: ConsumerGroupId): F[ConsumerGroupDescription] =
     ConcurrentEffect[F]
@@ -191,20 +207,24 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
             List(consumerGroupId.value).asJavaCollection
           )
           .all
-          .whenComplete { (consumerGroups, throwable) =>
-            cb(Option(throwable).toLeft(consumerGroups.asScala.get(consumerGroupId.value)))
+          .whenComplete {
+            (
+              consumerGroups,
+              throwable
+            ) =>
+              cb(Option(throwable).toLeft(consumerGroups.asScala.get(consumerGroupId.value)))
           }
         ()
       }
       .flatMap {
         case Some(consumerGroup) => ConcurrentEffect[F].pure(consumerGroup)
-        case None                => ConcurrentEffect[F].raiseError(new IllegalArgumentException("Cannot find the consumerGroupId"))
+        case None => ConcurrentEffect[F].raiseError(new IllegalArgumentException("Cannot find the consumerGroupId"))
       }
 
   private def isRunning(consumerGroup: ConsumerGroupDescription): F[Unit] =
     consumerGroup.state match {
       case ConsumerGroupState.DEAD | ConsumerGroupState.EMPTY => ConcurrentEffect[F].pure(())
-      case _                                                  => ConcurrentEffect[F].raiseError(new IllegalStateException("Cannot reset a running consumer-group"))
+      case _ => ConcurrentEffect[F].raiseError(new IllegalStateException("Cannot reset a running consumer-group"))
     }
 
   private def partitions(
@@ -250,7 +270,7 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
     val unsuccessfulLogTimestampOffsets = unsuccessfulOffsetsForTimes.keySet.map { topicPartition =>
       endOffsets.get(topicPartition) match {
         case Some(logEndOffset) => topicPartition -> LogOffsetResult.LogOffset(logEndOffset)
-        case None               => topicPartition -> LogOffsetResult.Unknown
+        case None => topicPartition -> LogOffsetResult.Unknown
       }
     }.toMap
 
@@ -260,7 +280,7 @@ class KafkaAdminClient[F[_]: ConcurrentEffect](
       val logTimestampOffset = logTimestampOffsets.get(topicPartition)
       logTimestampOffset match {
         case Some(LogOffsetResult.LogOffset(offset)) => List(topicPartition -> new OffsetAndMetadata(offset))
-        case _                                       => List.empty
+        case _ => List.empty
       }
     }.toMap
 

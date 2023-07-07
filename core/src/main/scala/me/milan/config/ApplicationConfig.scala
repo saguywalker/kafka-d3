@@ -5,11 +5,10 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 
 import cats.Show
-import org.apache.kafka.streams.Topology.AutoOffsetReset
-import org.http4s.Uri
-
 import me.milan.config.WriteSideConfig.UrlPath
 import me.milan.domain.Topic
+import org.apache.kafka.streams.Topology.AutoOffsetReset
+import org.http4s.Uri
 
 case class ApplicationConfig(
   kafka: KafkaConfig,

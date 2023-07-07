@@ -4,12 +4,11 @@ import cats.effect.Sync
 import cats.syntax.apply._
 import io.circe.Encoder
 import io.circe.syntax._
+import me.milan.config.WriteSideConfig
+import me.milan.writeside.WriteSideProcessor
 import org.http4s.HttpRoutes
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-
-import me.milan.config.WriteSideConfig
-import me.milan.writeside.WriteSideProcessor
 
 object WriteSideRoutes {
 

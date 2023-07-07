@@ -3,7 +3,6 @@ package me.milan.commands
 import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-
 import me.milan.pubsub.Pub
 
 object CommandProcessor {

@@ -14,14 +14,15 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import fs2.Stream
 import fs2.concurrent.SignallingRef
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.clients.consumer.KafkaConsumer
-
 import me.milan.config.KafkaConfig
-import me.milan.domain.{ Key, Record, Topic }
+import me.milan.domain.Key
+import me.milan.domain.Record
+import me.milan.domain.Topic
 import me.milan.pubsub.kafka.KConsumer
 import me.milan.pubsub.kafka.KConsumer.ConsumerGroupId
 import me.milan.serdes.AvroSerde
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.consumer.KafkaConsumer
 
 object Sub {
 
@@ -60,7 +61,7 @@ private[pubsub] class KafkaSub[F[_]: ConcurrentEffect, V >: Null: AvroSerde](
   haltSignal: SignallingRef[F, Boolean]
 ) extends Sub[F, V] {
 
-  //TODO: Check if stream is stopped (and initialized) before starting
+  // TODO: Check if stream is stopped (and initialized) before starting
   override def start: Stream[F, Record[V]] = {
 
     val create = Stream
@@ -122,17 +123,17 @@ private[pubsub] class KafkaSub[F[_]: ConcurrentEffect, V >: Null: AvroSerde](
 
   override def resume: F[Unit] = pauseSignal.set(false).map(_ => ())
 
-  //TODO: add logic with adminClient
+  // TODO: add logic with adminClient
   override def reset: F[Unit] = kafkaConsumer.read.map { consumer =>
-    //val partitions = kafkaConsumer.assignment.asScala.filter(_.topic == topic.value)
-    consumer.seekToBeginning(List.empty.asJava) //(partitions.asJava)
+    // val partitions = kafkaConsumer.assignment.asScala.filter(_.topic == topic.value)
+    consumer.seekToBeginning(List.empty.asJava) // (partitions.asJava)
   }
 
   override def stop: F[Unit] = haltSignal.set(true).map(_ => ())
 
   /**
-    * Does only start of being assigned partitions after the first poll
-    */
+   * Does only start of being assigned partitions after the first poll
+   */
   private def subscribe(topic: Topic): F[Unit] = kafkaConsumer.read.map { consumer =>
     consumer.subscribe(List(topic.value).asJavaCollection)
   }

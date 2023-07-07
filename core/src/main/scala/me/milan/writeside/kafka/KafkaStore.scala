@@ -4,12 +4,13 @@ import scala.collection.JavaConverters._
 
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.streams.scala.Serdes
-import org.apache.kafka.streams.state.{ StoreBuilder, Stores, TimestampedKeyValueStore }
-
 import me.milan.config.KafkaConfig.SchemaRegistryConfig
 import me.milan.domain.Topic
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.streams.scala.Serdes
+import org.apache.kafka.streams.state.StoreBuilder
+import org.apache.kafka.streams.state.Stores
+import org.apache.kafka.streams.state.TimestampedKeyValueStore
 
 case class StoreName(value: String) extends AnyVal
 object StoreName {

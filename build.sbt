@@ -6,28 +6,23 @@ import com.scalapenos.sbt.prompt._
 
 lazy val commonSettings = Seq(
   organization := "me.milanvdm",
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.13.11",
   resolvers ++= Seq(
-        "Typesafe Releases" at "http://repo.typesafe.com/typesafe/maven-releases/",
-        "confluent.io" at "http://packages.confluent.io/maven/"
-      ),
+    "confluent" at "https://packages.confluent.io/maven",
+    "Kaluza artifactory" at "https://kaluza.jfrog.io/artifactory/maven"
+  ),
   scalafmtOnCompile := true,
   incOptions := incOptions.value.withLogRecompileOnMacro(false),
   scalacOptions ++= commonScalacOptions,
-  fork in Test := true,
-  parallelExecution in Test := false,
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-  libraryDependencies ++= Seq(
-        compilerPlugin(D.kindProjector),
-        compilerPlugin(D.macroParadise)
-      ),
-  scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings"),
+  Test / fork := true,
+  Test / parallelExecution := false,
+  Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
   promptTheme := PromptTheme(
-        List(
-          text("[SBT] ", fg(136)),
-          currentProject(fg(64)).padRight(": ")
-        )
-      )
+    List(
+      text("[SBT] ", fg(136)),
+      currentProject(fg(64)).padRight(": ")
+    )
+  )
 )
 
 lazy val commonScalacOptions = Seq(
@@ -41,23 +36,18 @@ lazy val commonScalacOptions = Seq(
   "-language:experimental.macros",
   "-unchecked",
   "-Xfatal-warnings",
-  "-Xfuture",
   "-Xlint",
   "-Xlog-reflective-calls",
   "-Ydelambdafy:method",
-  "-Yno-adapted-args",
-  "-Ypartial-unification",
   "-Ywarn-dead-code",
-  "-Ywarn-value-discard",
-  "-Ywarn-unused-import",
-  "-Ywarn-inaccessible"
+  "-Ywarn-value-discard"
 )
 
 lazy val dockerSettings = Seq(
   name := "kafka-d3",
   dockerBaseImage := "openjdk:jre-alpine",
-  packageName in Docker := name.value,
-  version in Docker := version.value
+  Docker / packageName := name.value,
+  Docker / version := version.value
 )
 
 lazy val noPublishSettings = Seq(
@@ -73,50 +63,38 @@ lazy val noPublishSettings = Seq(
 lazy val D = new {
 
   val Versions = new {
-    val avro4s = "2.0.4"
-    val cats = "1.6.1"
-    val catsEffect = "1.3.1"
-    val catsPar = "0.2.1"
-    val circe = "0.11.1"
-    val fs2 = "1.0.5"
-    val http4s = "0.20.6"
-    val kafka = "2.3.0"
-    val kafkaConfluent = "5.3.0"
-    val pureConfig = "0.11.1"
-    val scalaJava8 = "0.9.0"
+    val avro4s = "4.1.1"
+    val cats = "2.9.0"
+    val catsEffect = "3.5.1"
+    val circe = "0.14.5"
+    val fs2 = "3.7.0"
+    val http4s = "0.23.22"
+    val kafka = "3.5.0"
+    val kafkaConfluent = "7.4.0"
+    val pureConfig = "0.17.4"
 
     // Test
-    val scalaTest = "3.0.8"
-
-    // Compiler
-    val kindProjector = "0.9.10"
-    val macroParadise = "2.1.1"
+    val scalaTest = "3.2.16"
   }
 
-  val avro4s = "com.sksamuel.avro4s"             %% "avro4s-core"                 % Versions.avro4s
-  val avroSerdes = "io.confluent"                % "kafka-streams-avro-serde"     % Versions.kafkaConfluent
-  val cats = "org.typelevel"                     %% "cats-core"                   % Versions.cats
-  val catsEffect = "org.typelevel"               %% "cats-effect"                 % Versions.catsEffect
-  val catsPar = "io.chrisdavenport"              %% "cats-par"                    % Versions.catsPar
-  val circe = "io.circe"                         %% "circe-core"                  % Versions.circe
-  val circeGeneric = "io.circe"                  %% "circe-generic"               % Versions.circe
-  val fs2 = "co.fs2"                             %% "fs2-core"                    % Versions.fs2
-  val http4sServer = "org.http4s"                %% "http4s-blaze-server"         % Versions.http4s
-  val http4sCirce = "org.http4s"                 %% "http4s-circe"                % Versions.http4s
-  val http4sClient = "org.http4s"                %% "http4s-blaze-client"         % Versions.http4s
-  val http4sDsl = "org.http4s"                   %% "http4s-dsl"                  % Versions.http4s
-  val kafkaClient = "org.apache.kafka"           % "kafka-clients"                % Versions.kafka
+  val avro4s = "com.sksamuel.avro4s" %% "avro4s-core" % Versions.avro4s
+  val avroSerdes = "io.confluent" % "kafka-streams-avro-serde" % Versions.kafkaConfluent
+  val cats = "org.typelevel" %% "cats-core" % Versions.cats
+  val catsEffect = "org.typelevel" %% "cats-effect" % Versions.catsEffect
+  val circe = "io.circe" %% "circe-core" % Versions.circe
+  val circeGeneric = "io.circe" %% "circe-generic" % Versions.circe
+  val fs2 = "co.fs2" %% "fs2-core" % Versions.fs2
+  val http4sServer = "org.http4s" %% "http4s-ember-server" % Versions.http4s
+  val http4sCirce = "org.http4s" %% "http4s-circe" % Versions.http4s
+  val http4sClient = "org.http4s" %% "http4s-ember-client" % Versions.http4s
+  val http4sDsl = "org.http4s" %% "http4s-dsl" % Versions.http4s
+  val kafkaClient = "org.apache.kafka" % "kafka-clients" % Versions.kafka
   val kafkaSchemaRegistryClient = "io.confluent" % "kafka-schema-registry-client" % Versions.kafkaConfluent
-  val kafkaStreams = "org.apache.kafka"          %% "kafka-streams-scala"         % Versions.kafka
-  val pureConfig = "com.github.pureconfig"       %% "pureconfig"                  % Versions.pureConfig
-  val scalaJava8 = "org.scala-lang.modules"      %% "scala-java8-compat"          % Versions.scalaJava8
+  val kafkaStreams = "org.apache.kafka" %% "kafka-streams-scala" % Versions.kafka
+  val pureConfig = "com.github.pureconfig" %% "pureconfig" % Versions.pureConfig
 
   // Test
   val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest
-
-  // Compiler
-  val kindProjector = "org.spire-math"  %% "kind-projector" % Versions.kindProjector
-  val macroParadise = "org.scalamacros" %% "paradise"       % Versions.macroParadise cross CrossVersion.full
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,31 +119,29 @@ lazy val core = Project(
   .settings(Revolver.settings)
   .settings(
     libraryDependencies ++= Seq(
-          D.avro4s,
-          D.avroSerdes,
-          D.cats,
-          D.catsEffect,
-          D.catsPar,
-          D.circe,
-          D.circeGeneric,
-          D.fs2,
-          D.http4sServer,
-          D.http4sCirce,
-          D.http4sClient,
-          D.http4sDsl,
-          D.kafkaClient,
-          D.kafkaStreams,
-          D.kafkaSchemaRegistryClient,
-          D.pureConfig,
-          D.scalaJava8,
-          D.scalaTest % "it,test"
-        )
+      D.avro4s,
+      D.avroSerdes,
+      D.cats,
+      D.catsEffect,
+      D.circe,
+      D.circeGeneric,
+      D.fs2,
+      D.http4sServer,
+      D.http4sCirce,
+      D.http4sClient,
+      D.http4sDsl,
+      D.kafkaClient,
+      D.kafkaStreams,
+      D.kafkaSchemaRegistryClient,
+      D.pureConfig,
+      D.scalaTest % "it,test"
+    )
   )
   .configs(IntegrationTest extend Test)
   .settings(Defaults.itSettings)
   .settings(
-    fork in IntegrationTest := true,
-    parallelExecution in IntegrationTest := false,
+    IntegrationTest / fork := true,
+    IntegrationTest / parallelExecution := false,
     inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings)
   )
 

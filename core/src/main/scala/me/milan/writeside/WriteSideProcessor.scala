@@ -9,20 +9,31 @@ import scala.concurrent.duration._
 import cats.effect.Sync
 import cats.syntax.show._
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
+import me.milan.config.KafkaConfig
+import me.milan.config.KafkaConfig.BootstrapServer._
+import me.milan.config.WriteSideConfig
+import me.milan.config.WriteSideConfig._
+import me.milan.domain.Aggregator
+import me.milan.domain.Topic
+import me.milan.serdes.AvroSerde
+import me.milan.serdes.KafkaAvroSerde
+import me.milan.serdes.StringSerde
+import me.milan.writeside.kafka.KafkaProcessor
+import me.milan.writeside.kafka.KafkaStore
+import me.milan.writeside.kafka.ProcessorName
+import me.milan.writeside.kafka.StoreName
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.streams.processor.{ LogAndSkipOnInvalidTimestamp, Processor, ProcessorSupplier }
+import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.processor.LogAndSkipOnInvalidTimestamp
+import org.apache.kafka.streams.processor.Processor
+import org.apache.kafka.streams.processor.ProcessorSupplier
 import org.apache.kafka.streams.scala.Serdes
-import org.apache.kafka.streams.state.{ QueryableStoreTypes, StreamsMetadata }
-import org.apache.kafka.streams.{ KafkaStreams, StreamsConfig, Topology }
+import org.apache.kafka.streams.state.QueryableStoreTypes
+import org.apache.kafka.streams.state.StreamsMetadata
 import org.http4s.Uri
-
-import me.milan.config.KafkaConfig.BootstrapServer._
-import me.milan.config.WriteSideConfig._
-import me.milan.config.{ KafkaConfig, WriteSideConfig }
-import me.milan.domain.{ Aggregator, Topic }
-import me.milan.serdes.{ AvroSerde, KafkaAvroSerde, StringSerde }
-import me.milan.writeside.kafka.{ KafkaProcessor, KafkaStore, ProcessorName, StoreName }
 
 object WriteSideProcessor {
 
@@ -77,7 +88,7 @@ private[writeside] class KafkaWriteSideProcessor[F[_]: Sync, A >: Null: AvroSerd
 
   var stream: KafkaStreams = _
 
-  //TODO: Check if state is not running because stream needs to be stopped first
+  // TODO: Check if state is not running because stream needs to be stopped first
   override def start: F[Unit] = Sync[F].delay {
     shutdownHook()
     stream = create
@@ -111,7 +122,7 @@ private[writeside] class KafkaWriteSideProcessor[F[_]: Sync, A >: Null: AvroSerd
 
     val uri = metadata match {
       case StreamsMetadata.NOT_AVAILABLE => None
-      case _                             => Uri.fromString(s"${metadata.host}:${metadata.port}").toOption
+      case _ => Uri.fromString(s"${metadata.host}:${metadata.port}").toOption
     }
 
     Sync[F].delay(

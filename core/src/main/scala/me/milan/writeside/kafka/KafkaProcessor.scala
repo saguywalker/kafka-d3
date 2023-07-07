@@ -1,14 +1,18 @@
 package me.milan.writeside.kafka
 
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success, Try }
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
-import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.streams.processor.{ Processor, ProcessorContext }
-import org.apache.kafka.streams.state.{ TimestampedKeyValueStore, ValueAndTimestamp }
-
-import me.milan.domain.{ Aggregator, Topic }
+import me.milan.domain.Aggregator
+import me.milan.domain.Topic
 import me.milan.serdes.AvroSerde
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.streams.processor.Processor
+import org.apache.kafka.streams.processor.ProcessorContext
+import org.apache.kafka.streams.state.TimestampedKeyValueStore
+import org.apache.kafka.streams.state.ValueAndTimestamp
 
 case class ProcessorName(value: String) extends AnyVal
 object ProcessorName {
